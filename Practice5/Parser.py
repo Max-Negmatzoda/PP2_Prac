@@ -1,89 +1,31 @@
 import re
-import json
 
+file_path = "practice5/raw.txt"
 
-def clean_number(value):
-    """Convert 1 200,00 → 1200.00"""
-    return float(value.replace(" ", "").replace(",", "."))
+with open(file_path, encoding="utf-8") as file:
+    data = file.read()
 
+price_list = re.findall(r"Стоимость\s*\n([\d\s,]+)", data)
 
-def extract_prices(text):
-    return re.findall(r'\d[\d\s]*,\d{2}', text)
+product_list = re.findall(r"\d+\.\s*\n(.+?)\n", data)
 
+total_match = re.search(r"ИТОГО:\s*\n([\d\s,]+)", data)
+total_value = total_match.group(1) if total_match else "Не найдено"
 
-def extract_product_names(text):
-    pattern = re.compile(
-        r'\d+\.\s*\n(.+?)\n[\d,\s]+\s*x',
-        re.MULTILINE
-    )
-    return [m.group(1).strip() for m in pattern.finditer(text)]
+date_time_match = re.search(r"Время:\s*(.+)", data)
+date_time = date_time_match.group(1) if date_time_match else "Не найдено"
 
+payment = re.search(r"Банковская карта|Наличные", data)
+payment_method = payment.group() if payment else "Не найдено"
 
-def extract_items(text):
-    items = []
+print("Товары:")
+for item in product_list:
+    print("•", item)
 
-    pattern = re.compile(
-        r'\d+\.\s*\n'
-        r'(.+?)\n'
-        r'([\d,\s]+)\s*x\s*([\d\s,]+)\n'
-        r'([\d\s,]+)',
-        re.MULTILINE
-    )
+print("\nЦены:")
+for price in price_list:
+    print("•", price)
 
-    for match in pattern.finditer(text):
-        name = match.group(1).strip()
-        quantity = clean_number(match.group(2))
-        price = clean_number(match.group(3))
-        total = clean_number(match.group(4))
-
-        items.append({
-            "name": name,
-            "quantity": quantity,
-            "price": price,
-            "total": total
-        })
-
-    return items
-
-
-def extract_total(text):
-    match = re.search(r'ИТОГО:\s*\n?\s*([\d\s]+,\d{2})', text)
-    return clean_number(match.group(1)) if match else 0
-
-
-def extract_datetime(text):
-    match = re.search(r'Время:\s*(\d{2}\.\d{2}\.\d{4})\s*(\d{2}:\d{2}:\d{2})', text)
-    if match:
-        return match.group(1), match.group(2)
-    return "", ""
-
-
-def extract_payment_method(text):
-    match = re.search(r'(Банковская карта|Наличные):', text)
-    return match.group(1) if match else ""
-
-
-def parse_receipt(text):
-    items = extract_items(text)
-
-    date, time = extract_datetime(text)
-
-    return {
-        "prices": extract_prices(text),
-        "product_names": extract_product_names(text),
-        "items": items,
-        "calculated_total": sum(item["total"] for item in items),
-        "receipt_total": extract_total(text),
-        "date": date,
-        "time": time,
-        "payment_method": extract_payment_method(text)
-    }
-
-
-if __name__ == "__main__":
-    with open("raw.txt", "r", encoding="utf-8") as file:
-        text = file.read()
-
-    result = parse_receipt(text)
-
-    print(json.dumps(result, indent=4, ensure_ascii=False))
+print("\nИтого:", total_value)
+print("Дата и время:", date_time)
+print("Способ оплаты:", payment_method)
