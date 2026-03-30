@@ -4,5 +4,5 @@ def load_config():
         "user": "postgres",
         "password": "",
         "host": "localhost",
-        "port": "5432"
+        "port": ""
     }
