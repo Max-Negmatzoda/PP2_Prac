@@ -2,7 +2,7 @@ def load_config():
     return {
         "dbname": "postgres",
         "user": "postgres",
-        "password": "270091",
+        "password": "",
         "host": "localhost",
         "port": "5432"
     }
