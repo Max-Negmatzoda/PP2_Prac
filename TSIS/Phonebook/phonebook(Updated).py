@@ -553,7 +553,7 @@ def import_from_json(filename="contacts.json"):
                         WHERE id = %s
                     """, (group_id, contact_id))
 
-                # 📱 телефоны
+                
                 for ph in phones:
                     number = ph.get("number")
                     ptype = ph.get("type", "mobile")
